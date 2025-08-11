@@ -5,6 +5,7 @@ volumes:
   db_data:
   gem_cache:
   node_modules:
+  next_build:
 services:
   db:
     image: postgres:14.1-alpine
@@ -52,9 +53,11 @@ services:
     volumes:
       - ./frontend:/var/app:cached
       - node_modules:/var/app/node_modules
+      - next_build:/var/app/.next
+
     ports:
       - 8000:8000
     environment:
       NODE_ENV: development
       NEXT_TELEMETRY_DISABLED: 1
-    command: npm run dev
+    command: npm run dev -- -p 8000
