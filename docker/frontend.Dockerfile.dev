@@ -1,14 +1,14 @@
 FROM node:18.9.0
 
-ENV APP_PATH /var/app
-ENV NEXT_PORT 8080
-
+ENV APP_PATH=/var/app
 WORKDIR $APP_PATH
 
+# Copy only package files to leverage Docker layer caching
 COPY package.json package-lock.json ./
 RUN npm install
 
-COPY . ./
+# Copy all source code
+COPY . .
 
-EXPOSE $NEXT_PORT
-CMD ["npm", "run", "dev"]
+EXPOSE 8000
+CMD ["npm", "run", "dev", "--", "-p", "8000"]

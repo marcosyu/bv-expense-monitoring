@@ -26,7 +26,7 @@ export default function SignUp() {
     if (loading) return;
     setLoading(true);
     try {
-      const { data } = await axios.post(`${API_URL}users/login`, formData);
+      const { data } = await axios.post(`${API_URL}/users/login`, formData);
       setCookie('nextRailsUser', JSON.stringify(data), {
         path: '/',
         maxAge:

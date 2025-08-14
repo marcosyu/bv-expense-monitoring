@@ -51,13 +51,13 @@ services:
     networks:
       - development
     volumes:
-      - ./frontend:/var/app:cached
-      - node_modules:/var/app/node_modules
-      - next_build:/var/app/.next
-
+      - ./frontend:/var/app
+      - /var/app/node_modules
     ports:
       - 8000:8000
     environment:
-      NODE_ENV: development
-      NEXT_TELEMETRY_DISABLED: 1
+      - NODE_ENV=development
+      - NEXT_TELEMETRY_DISABLED=1
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
     command: npm run dev -- -p 8000
