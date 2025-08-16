@@ -5,7 +5,7 @@ ENV BUNDLE_VERSION 2.3.5
 ENV RAILS_PORT 3000
 
 
-RUN apt-get update -qq && apt-get install -y nodejs postgresql-client
+RUN apt-get update -qq && apt-get install -y nodejs postgresql-client vim
 RUN gem install bundler --version "$BUNDLE_VERSION"
 
 WORKDIR $APP_PATH
@@ -13,4 +13,11 @@ WORKDIR $APP_PATH
 COPY Gemfile Gemfile.lock ./
 RUN bundle check || bundle install --jobs 20 --retry 5
 
-COPY . .
+# Make entrypoint script executable
+COPY entrypoint.sh /usr/bin/
+RUN chmod +x /usr/bin/entrypoint.sh
+
+ENTRYPOINT ["entrypoint.sh"]
+
+# Default command
+CMD ["bin/rails", "server", "-b", "0.0.0.0"]

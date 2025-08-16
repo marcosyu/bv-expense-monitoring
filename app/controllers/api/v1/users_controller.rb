@@ -6,7 +6,6 @@ module Api
       skip_before_action :authenticate_user, only: %i[create login verify]
       before_action :set_user, only: [:update]
 
-      # serves as signup
       def create
         result = UserInteractor::AddToSystem.call(params: user_params)
         if result.success?
@@ -26,10 +25,10 @@ module Api
       end
 
       def login
-        user = User.verified.where(email: login_params[:email]).first
+        user = User.verified.find_by(email: login_params[:email])
         if user&.authenticate(login_params[:password])
           token = JsonWebToken.encode(user_id: user.id)
-          time = Time.zone.now + 100.hours
+          time = Time.zone.now + 1.hours
           render json: {
             token: token,
             exp: time,

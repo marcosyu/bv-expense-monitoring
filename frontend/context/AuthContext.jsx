@@ -1,43 +1,41 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
-import { API_URL } from "../constants";
+import { BASE_API_URL, LOGIN_URL, API_TOKEN } from "../constants/index";
+
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  if (typeof window === 'undefined')  return
-  const [token, setToken] = useState(localStorage.getItem("token") || null);
+  const api = axios.create({ baseURL: BASE_API_URL });
   const [user, setUser] = useState(null);
+  const [token, setToken] = useState(() => {
+    if (typeof window === "undefined") return null;
 
-  // Setup axios interceptor
+    return localStorage.getItem("token") || null;
+  });
+
   useEffect(() => {
-    const instance = axios.create();
+    if (token) {
+      localStorage.setItem("token", token);
+    } else {
+      localStorage.removeItem("token");
+    }
+  }, [token]);
 
-    instance.interceptors.request.use(
-      (config) => {
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-      },
-      (error) => Promise.reject(error)
-    );
-
-    // Replace axios default instance with this one
-    axios.defaults = instance.defaults;
+  useEffect(() => {
+    api.interceptors.request.use((config) => {
+      token && (config.headers.Authorization = `Bearer ${token}`);
+      config.headers["X-Api-Token"] = API_TOKEN;
+      return config;
+    },(error) => Promise.reject(error));
   }, [token]);
 
   const login = async (email, password) => {
-    const res = await axios.post(`${API_URL}login`, { email, password });
-    localStorage.setItem("token", res.data.token);
+    const res = await api.post(LOGIN_URL, { email, password });
     setToken(res.data.token);
-
-    // Optional: fetch user details after login
-    const userRes = await axios.get("https://your-api.com/me");
-    setUser(userRes.data);
+    setUser(res.data.user_guid);
   };
 
   const logout = () => {
-    localStorage.removeItem("token");
     setToken(null);
     setUser(null);
   };

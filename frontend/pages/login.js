@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useRouter } from "next/router";
 
 export default function Login() {
   const { login } = useAuth();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("marcos@yu.com");
+  const [password, setPassword] = useState("marcos@yu.com");
   const [error, setError] = useState("");
+  const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,6 +22,8 @@ export default function Login() {
       setError(err.response?.data?.message || "Login failed");
     }
   };
+
+  const handleSignUpRedirect = () => router.push("/signup");
 
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
@@ -56,6 +60,13 @@ export default function Login() {
             className="w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold transition duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-900"
           >
             Sign In
+          </button>
+          <button
+            type="button"
+            onClick={handleSignUpRedirect}
+            className="w-full py-2 px-4 mt-2 bg-gray-200 hover:bg-gray-300 text-gray-900 rounded-lg font-semibold transition duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:ring-offset-gray-900"
+          >
+            Sign Up
           </button>
         </form>
       </div>

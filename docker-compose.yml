@@ -26,7 +26,6 @@ services:
     image: nextjs_rails_server:development
     tty: true
     stdin_open: true
-    command: bundle exec rails s -p 3000 -b '0.0.0.0'
     volumes:
       - .:/var/app:cached
       - gem_cache:/usr/local/bundle/gems
@@ -34,12 +33,11 @@ services:
       - development
     ports:
       - 3000:3000
+    env_file:
+      - .env
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_HOST: db
-      DATABASE: nextjs_on_rails_development
       RAILS_ENV: development
+      RAILS_MASTER_KEY: 17f49ffb9d022d0d8ad8b2b384c65b6d
     depends_on:
       - db
       - frontend
@@ -60,4 +58,5 @@ services:
       - NEXT_TELEMETRY_DISABLED=1
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
+      - API_TOKEN=38055d4349f7f3f92d26103d31b7a19ccd7800fc3e16c5fbe8863583e91d40ad
     command: npm run dev -- -p 8000
