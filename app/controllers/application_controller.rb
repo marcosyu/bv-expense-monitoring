@@ -7,7 +7,6 @@ class ApplicationController < ActionController::API
   before_action :authenticate_user
   rescue_from ActiveRecord::RecordNotFound, with: :record_not_found
   rescue_from Pundit::NotAuthorizedError, with: :unauthorized_access
-  # rescue_from UnauthorizedError, with: :unauthorized_access
 
   def validate_request
     unless request.headers['X-Api-Token'] == Rails.application.credentials.api_token

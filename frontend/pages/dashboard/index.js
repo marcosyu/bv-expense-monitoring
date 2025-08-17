@@ -1,6 +1,11 @@
 import { useAuth } from "../../context/AuthContext";
+import { useRouter } from "next/router";
+
 export default function Dashboard() {
-  const user = useAuth();
+  const { user } = useAuth();
+  const router = useRouter();
+
+  !user && router.push("/login");
 
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">

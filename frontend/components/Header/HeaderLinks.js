@@ -4,9 +4,12 @@ import { useAuth } from "../../context/AuthContext";
 export const renderHeaderLinks = () => {
   const { token } = useAuth();
 
-  token && renderProtectedLinks()
-  !token && renderUnprotectedLinks()
-}
+  if (token) {
+    return renderProtectedLinks();
+  } else {
+    renderUnprotectedLinks();
+  }
+};
 
 const renderProtectedLinks = () => {
   return (
@@ -19,9 +22,16 @@ const renderProtectedLinks = () => {
         </Link>
       </li>
       <li>
-        <Link href="/about">
+        <Link href="/users">
           <a className="hover:underline underline-offset-2 px-4 py-1 tracking-wider">
-            About
+            Users
+          </a>
+        </Link>
+      </li>
+      <li>
+        <Link href="/expenses">
+          <a className="hover:underline underline-offset-2 px-4 py-1 tracking-wider">
+            Expenses
           </a>
         </Link>
       </li>

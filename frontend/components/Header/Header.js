@@ -16,7 +16,7 @@ export default function Header() {
     if (!token) return;
 
     logout();
-    router.push('/login')
+    router.push("/login");
   };
 
   return (
@@ -42,18 +42,11 @@ export default function Header() {
           )}
         </div>
       </header>
-      {showMenu && (
-        <nav className="py-5 font-semibold bg-yellow-200">
+      {showMenu && token && (
+        <nav className="py-5 font-semibold">
           <ul className="flex flex-col items-end space-y-2">
             <li>
-              <Link href="/dashboard">
-                <a className="px-3 py-2 underline tracking-wider">Dashboard</a>
-              </Link>
-            </li>
-            <li>
-              <Link href="/about">
-                <a className="px-3 py-1 underline tracking-wider">About</a>
-              </Link>
+              <Button onClick={signOut}>Sign out</Button>
             </li>
           </ul>
         </nav>
