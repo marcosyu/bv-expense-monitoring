@@ -4,6 +4,6 @@ module UserInteractor
   class AddToSystem
     include Interactor::Organizer
 
-    organize UserInteractor::Create, Mail::VerifyUser
+    organize UserInteractor::Create
   end
 end

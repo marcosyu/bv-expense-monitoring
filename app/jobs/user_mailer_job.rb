@@ -3,7 +3,9 @@
 class UserMailerJob < ApplicationJob
   queue_as :default
 
-  def perform(user_id)
-    UserVerificationMailer.verify(User.find(user_id)).deliver_now
+  discard_on StandardError
+
+  def perform(user)
+    UserVerificationMailer.verify(user).deliver_now
   end
 end

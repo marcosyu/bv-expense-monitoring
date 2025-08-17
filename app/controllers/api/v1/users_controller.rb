@@ -9,7 +9,9 @@ module Api
       def create
         result = UserInteractor::AddToSystem.call(params: user_params)
         if result.success?
-          render json: result.user, status: :created
+          render json: {
+            verification_url: users_verify_path(token: result.user.reset_password_token)
+          }, status: :created
         else
           render json: result.error, status: :unprocessable_entity
         end
@@ -27,12 +29,9 @@ module Api
       def login
         user = User.verified.find_by(email: login_params[:email])
         if user&.authenticate(login_params[:password])
-          token = JsonWebToken.encode(user_id: user.id)
-          time = Time.zone.now + 1.hours
           render json: {
-            token: token,
-            exp: time,
-            email: user.email
+            token:     JsonWebToken.encode(user_id: user.id),
+            full_name: user.full_name
           }
         else
           render json: { errors: I18n.t('user.errors.login') }, status: :unauthorized

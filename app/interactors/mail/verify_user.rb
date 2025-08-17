@@ -5,7 +5,7 @@ module Mail
     include Interactor
 
     def call
-      UserMailerJob.perform_later(context.user.id)
+      UserMailerJob.perform_later(context.user)
     end
   end
 end

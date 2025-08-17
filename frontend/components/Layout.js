@@ -1,11 +1,7 @@
-import { useCookies } from 'react-cookie';
-
 import Footer from './Footer';
-import Header from './Header';
+import Header from './Header/Header';
 
 export default function Layout({ children }) {
-  const [cookies, setCookie, removeCookie] = useCookies(['user']);
-
   return (
     <div className='flex flex-col'>
       <Header />

@@ -12,7 +12,7 @@
 #  provider               :string           default("email"), not null
 #  reset_password_sent_at :datetime
 #  reset_password_token   :string
-#  role                   :integer          default("customer"), not null
+#  role                   :integer          default("employee"), not null
 #  sign_in_count          :integer          default(0), not null
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
@@ -25,7 +25,7 @@
 #
 class User < ApplicationRecord
   has_secure_password
-  enum role: %i[customer admin]
+  enum role: %i[employee reviewer]
 
   validates :email, presence: true, uniqueness: { case_sensitive: false }
   validates :password, length: { minimum: 8 }, on: :create
@@ -34,5 +34,9 @@ class User < ApplicationRecord
 
   def full_name
     "#{first_name} #{last_name}"
+  end
+
+  def verification_link
+    "#{BASE_URL}users/verify?token=#{reset_password_token}"
   end
 end

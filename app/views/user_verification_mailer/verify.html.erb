@@ -49,11 +49,11 @@
   <body>
     <div>
       <h2 style="margin-bottom: 2rem;">Thanks for signing up <%= @user.full_name || @user.email %>!</h2>
-      <a style="font-weight: 300;" href="http://localhost:3000/users/verify?token=<%=@user.reset_password_token%>">
+      <a style="font-weight: 300;" href="<%= users_verify_path(token: @user.reset_password_token) %>">
         Click here to verify your account!
       </a>
       <p class="divider">OR copy & paste the following URL in your browser</p>
-      <p class="url-cp"><%= "http://localhost:3000/users/verify?token=#{@user.reset_password_token}" %></p>
+      <p class="url-cp"><%= users_verify_path(token: @user.reset_password_token) %></p>
     </div>
   </body>
 </html>
