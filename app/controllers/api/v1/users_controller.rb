@@ -3,24 +3,37 @@
 module Api
   module V1
     class UsersController < ApplicationController
-      skip_before_action :authenticate_user, only: %i[create login verify]
+      skip_before_action :authenticate_user, only: %i[login verify]
       before_action :set_user, only: [:update]
 
+      def index
+        authorize @current_user
+        render json: User.all
+      end
+
       def create
+        authorize @current_user
         result = UserInteractor::AddToSystem.call(params: user_params)
         if result.success?
-          render json: {
-            verification_url: users_verify_path(token: result.user.reset_password_token)
-          }, status: :created
+          render json: { user: result.user}, status: :created
         else
           render json: result.error, status: :unprocessable_entity
         end
       end
 
       def update
-        authorize @user
+        authorize @current_user
         if @user.update(user_params)
           render json: { message: I18n.t('generic.update.success') }, status: :ok
+        else
+          render json: { errors: @user.error_string }, status: :unprocessable_entity
+        end
+      end
+
+      def destroy
+        authorize @current_user
+        if @user.destroy
+          render json: { message: I18n.t('generic.destroy.success') }, status: :ok
         else
           render json: { errors: @user.error_string }, status: :unprocessable_entity
         end

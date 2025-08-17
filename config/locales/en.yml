@@ -10,5 +10,7 @@ en:
       success: Created successfully.
     update:
       success: Updated successfully.
+    destroy:
+      success: Deleted successfully.
   authorization:
     error: Unauthorized access.

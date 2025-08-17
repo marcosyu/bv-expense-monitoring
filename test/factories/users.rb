@@ -25,13 +25,13 @@
 #
 FactoryBot.define do
   factory :user do
-    role { 'customer' }
+    role { 'employee' }
     first_name { Faker::Name.first_name }
     last_name { Faker::Name.last_name }
     email { Faker::Internet.email }
     reset_password_token { nil }
     reset_password_sent_at { DateTime.now }
-    password { Faker::Internet.password }
+    password { "password123" }
 
     trait :unverified do
       reset_password_token { SecureRandom.uuid }

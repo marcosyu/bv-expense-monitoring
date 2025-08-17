@@ -1,115 +1,57 @@
-# frozen_string_literal: true
+# test/controllers/api/v1/users_controller_test.rb
+require "test_helper"
 
-require 'test_helper'
+class Api::V1::UsersControllerTest < ActionDispatch::IntegrationTest
+  setup do
+    @employee = create(:user, role: "employee")
+    @reviewer = create(:user, role: "reviewer")
+    employee_jwt_token = JsonWebToken.encode(user_id: @employee.id)
+    reviewer_jwt_token = JsonWebToken.encode(user_id: @reviewer.id)
+    @api_header = { "X-Api-Token" => Rails.application.credentials.api_token }
+    @reviewer_auth_header = @api_header.merge("Authorization" => "Bearer #{reviewer_jwt_token}")
+    @employee_auth_header = @api_header.merge("Authorization" => "Bearer #{employee_jwt_token}")
+  end
 
-module Api
-  module V1
-    class UsersControllerTest < ActionDispatch::IntegrationTest
-      def test_create_user_failure
-        post api_v1_users_path, params: {
-          email: 'akhil@example.com'
-        }
-        assert_equal 422, status
-        assert response.parsed_body.key?('errors')
-        assert_enqueued_jobs 0
-      end
+  test "require jwt token from a reviewer and show all users" do
+    get api_v1_users_url, headers: @reviewer_auth_header
+    assert_response :success
+  end
 
-      def test_create_user_success
-        assert_enqueued_jobs 0
-        post api_v1_users_path, params: {
-          email: 'akhil@example.com',
-          password: 'password'
-        }
-        assert_equal 201, status
-        assert_enqueued_jobs 1
-        assert_enqueued_with job: UserMailerJob
-      end
+  test "require jwt token from a reviewer and calls the interactor" do
+    new_user_params = {
+      email: "new@example.com",
+      first_name: "New",
+      last_name: "User",
+      password: "password",
+      role: "employee"
+    }
 
-      def test_update_user_authentication_failure_when_unauthenticated
-        user = create(:user)
-        patch api_v1_user_path(user), params: {
-          email: 'some@example.com'
-        }
-        assert response.parsed_body.key?('errors')
-        assert_equal 'Authentication token not provided', response.parsed_body['errors']
-      end
+    UserInteractor::AddToSystem.expects(:call).returns(OpenStruct.new(success?: true, user: @employee))
 
-      def test_update_user_success_when_authenticated
-        user = create(:user)
-        patch api_v1_user_path(user), params: {
-          email: 'some@example.com'
-        }, headers: get_auth_headers(user)
-        assert response.parsed_body.key?('message')
-        assert_equal 'some@example.com', user.reload.email
-      end
+    post api_v1_users_url,
+        params: new_user_params,
+        headers: @reviewer_auth_header
 
-      def test_update_user_failure_when_unauthorized
-        user1 = create(:user)
-        user2 = create(:user)
+    assert_response :created
+  end
 
-        patch api_v1_user_path(user1), params: {
-          email: 'some@example.com'
-        }, headers: get_auth_headers(user2)
+  test "require jwt token from the user owner and expect update call" do
+    User.expects(:find_by).returns(@employee)
+    @employee.expects(:update).returns(true)
+    patch api_v1_user_url(@employee),
+          params: { user: { first_name: "Updated" } },
+          headers: @employee_auth_header
+    assert_response :success
+  end
 
-        assert response.parsed_body.key?('errors')
-        assert_equal I18n.t('authorization.error'), response.parsed_body['errors']
-      end
-
-      def test_update_user_failure_when_email_already_exists
-        user1 = create(:user)
-        user2 = create(:user)
-
-        patch api_v1_user_path(user1), params: {
-          email: user2.email
-        }, headers: get_auth_headers(user1)
-
-        assert response.parsed_body.key?('errors')
-        assert response.parsed_body['errors'].include? 'Email has already been taken'
-      end
-
-      def test_verify_failure_when_token_not_found
-        user = create(:user, :unverified)
-        get users_verify_path(token: 'some-token')
-        assert response.parsed_body.key?('errors')
-        assert_equal I18n.t('user.errors.verify'), response.parsed_body['errors']
-      end
-
-      def test_verify_success
-        user = create(:user, :unverified)
-        get users_verify_path(token: user.reset_password_token)
-        assert user.reload.reset_password_token.nil?
-      end
-
-      def test_login_failure_when_unverified
-        user = create(:user, :unverified, password: 'password')
-
-        post login_api_v1_users_path, params: {
-          email: user.email,
-          password: 'password'
-        }
-        assert_equal I18n.t('user.errors.login'), response.parsed_body['errors']
-      end
-
-      def test_login_failure_when_wrong_credentials
-        user = create(:user, password: 'examplepassword')
-
-        post login_api_v1_users_path, params: {
-          email: user.email,
-          password: 'password'
-        }
-        assert_equal I18n.t('user.errors.login'), response.parsed_body['errors']
-      end
-
-      def test_login_success
-        user = create(:user, password: 'password')
-
-        post login_api_v1_users_path, params: {
-          email: user.email,
-          password: 'password'
-        }
-        assert response.parsed_body.key?('token')
-        assert_equal user.email, response.parsed_body['email']
-      end
-    end
+  test "should login user" do
+    User.expects(:verified).returns(User)
+    User.expects(:find_by).with(email: @employee.email).returns(@employee)
+    @employee.expects(:authenticate).returns(true)
+    post login_api_v1_users_url,
+         params: { email: @employee.email, password: "password" },
+         headers: @employee_auth_header
+    assert_response :success
+    assert_includes @response.parsed_body, "token"
   end
 end

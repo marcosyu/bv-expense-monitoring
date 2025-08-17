@@ -6,10 +6,10 @@
 Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
-      resources :users, only: %i[create show update] do
+      resources :expenses
+      resources :users, except: %i[show new edit] do
         post :login, on: :collection
       end
     end
   end
-  get 'users/verify', to: 'api/v1/users#verify'
 end

@@ -1,69 +1,70 @@
 # frozen_string_literal: true
 
-# == Schema Information
-#
-# Table name: users
-#
-#  id                     :uuid             not null, primary key
-#  email                  :string           not null
-#  first_name             :string           default("")
-#  last_name              :string           default("")
-#  password_digest        :string           not null
-#  provider               :string           default("email"), not null
-#  reset_password_sent_at :datetime
-#  reset_password_token   :string
-#  role                   :integer          default("employee"), not null
-#  sign_in_count          :integer          default(0), not null
-#  created_at             :datetime         not null
-#  updated_at             :datetime         not null
-#
-# Indexes
-#
-#  index_users_on_email                 (email) UNIQUE
-#  index_users_on_reset_password_token  (reset_password_token) UNIQUE
-#  index_users_on_role                  (role)
-#
-require 'test_helper'
+require "test_helper"
 
 class UserTest < ActiveSupport::TestCase
   def setup
-    @user = create(:user)
+    @user = User.new(
+      email: "test@example.com",
+      password: "password123",
+      first_name: "John",
+      last_name: "Doe"
+    )
   end
 
-  def test_valid
+  test "valid user" do
     assert @user.valid?
   end
 
-  def test_email_is_required
-    user = build(:user, email: nil)
-    assert_raises ActiveRecord::RecordInvalid do
-      user.save!
-    end
-    assert_includes user.errors[:email], "can't be blank"
+  test "email must be present" do
+    @user.email = ""
+    assert_not @user.valid?
+    assert_includes @user.errors[:email], "can't be blank"
   end
 
-  def test_email_is_unique
-    user = build(:user, email: @user.email)
-    assert_raises ActiveRecord::RecordInvalid do
-      user.save!
-    end
-    assert_includes user.errors[:email], 'has already been taken'
+  test "email must be unique" do
+    @user.save!
+    duplicate = @user.dup
+    assert_not duplicate.valid?
+    assert_includes duplicate.errors[:email], "has already been taken"
   end
 
-  def test_password_is_required
-    user = build(:user, password: nil)
-    assert_raises ActiveRecord::RecordInvalid do
-      user.save!
-    end
-    assert_includes user.errors[:password], "can't be blank"
-
-    user.password = '12345678'
-    assert user.save!
+  test "password must be at least 8 characters" do
+    @user.password = "short"
+    assert_not @user.valid?
+    assert_includes @user.errors[:password], "is too short (minimum is 8 characters)"
   end
 
-  def test_authenticate_password
-    user = create(:user, password: '12345678')
-    assert user.authenticate('12345678')
-    refute user.authenticate('123456789')
+  test "default role is employee" do
+    user = User.create!(email: "another@example.com", password: "password123")
+    assert_equal "employee", user.role
+    assert user.employee?
+    assert_not user.reviewer?
+  end
+
+  test "enum role reviewer" do
+    @user.role = :reviewer
+    assert_equal "reviewer", @user.role
+    assert @user.reviewer?
+  end
+
+  test "full_name returns first + last name" do
+    assert_equal "John Doe", @user.full_name
+  end
+
+  test "verified scope excludes users with reset_password_token" do
+    verified_user = User.create!(
+      email: "verified@example.com",
+      password: "password123"
+    )
+
+    unverified_user = User.create!(
+      email: "unverified@example.com",
+      password: "password123",
+      reset_password_token: "sometoken"
+    )
+
+    assert_includes User.verified, verified_user
+    assert_not_includes User.verified, unverified_user
   end
 end

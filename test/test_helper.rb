@@ -20,3 +20,5 @@ module ActiveSupport
     end
   end
 end
+
+Minitest.backtrace_filter = Minitest::BacktraceFilter.new
