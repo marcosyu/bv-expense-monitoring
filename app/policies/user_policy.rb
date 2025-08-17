@@ -5,6 +5,10 @@ class UserPolicy < ApplicationPolicy
     user.reviewer?
   end
 
+  def show?
+    user.id == record.id || user.reviewer?
+  end
+
   def create?
     user.reviewer?
   end

@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-# app/controllers/api/v1/expenses_controller.rb
 module Api
   module V1
     class ExpensesController < ApplicationController
@@ -8,7 +7,6 @@ module Api
       before_action :authorize_expense, only: %i[update destroy submit approve reject]
 
       def index
-        expenses = current_user.expenses
         render json: expenses
       end
 
@@ -27,21 +25,24 @@ module Api
 
       def update
         if @expense.update(expense_params)
-          render json: @expense
+          render json: expenses
         else
           render json: { errors: @expense.errors.full_messages }, status: :unprocessable_entity
         end
       end
 
       def destroy
-        @expense.destroy
-        head :no_content
+        if @expense.destroy
+          render json: expenses
+        else
+          render json: { errors: @expense.errors.full_messages }, status: :unprocessable_entity
+        end
       end
 
       def submit
         if @expense.drafted?
           @expense.update!(status: :submitted)
-          render json: @expense
+          render json: expenses
         else
           render json: { error: "Only drafted expenses can be submitted" }, status: :unprocessable_entity
         end
@@ -50,7 +51,7 @@ module Api
       def approve
         if @expense.submitted?
           @expense.update!(status: :approved)
-          render json: @expense
+          render json: expenses
         else
           render json: { error: "Only submitted expenses can be approved" }, status: :unprocessable_entity
         end
@@ -59,7 +60,7 @@ module Api
       def reject
         if @expense.submitted?
           @expense.update!(status: :rejected)
-          render json: @expense
+          render json: expenses
         else
           render json: { error: "Only submitted expenses can be rejected" }, status: :unprocessable_entity
         end
@@ -67,8 +68,13 @@ module Api
 
       private
 
+      def expenses
+        { expenses: Expense.expenses_for(current_user) }
+      end
+
       def set_expense
-        @expense = Expense.find(params[:id])
+        id = params[:id] || params[:expense_id]
+        @expense = Expense.find(id)
       end
 
       def authorize_expense

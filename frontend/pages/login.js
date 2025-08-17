@@ -4,12 +4,12 @@ import { useRouter } from "next/router";
 
 export default function Login() {
   const { login, user } = useAuth();
-  const [email, setEmail] = useState("marcosyu26@gmail.com");
-  const [password, setPassword] = useState("P@ssw0rd");
+  const [email, setEmail] = useState("marcos@exmon.com");
+  const [password, setPassword] = useState("password");
   const [error, setError] = useState("");
   const router = useRouter();
 
-  user && router.push('/dashboard')
+  user && router.push('/expenses')
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,13 +17,11 @@ export default function Login() {
 
     try {
       await login(email, password);
-      router.push('/dashboard')
+      router.push('/expenses')
     } catch (error) {
       setError(error.response?.data?.errors || "Login failed");
     }
   };
-
-  const handleSignUpRedirect = () => router.push("/signup");
 
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
@@ -60,13 +58,6 @@ export default function Login() {
             className="w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold transition duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-900"
           >
             Sign In
-          </button>
-          <button
-            type="button"
-            onClick={handleSignUpRedirect}
-            className="w-full py-2 px-4 mt-2 bg-gray-200 hover:bg-gray-300 text-gray-900 rounded-lg font-semibold transition duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:ring-offset-gray-900"
-          >
-            Sign Up
           </button>
         </form>
       </div>

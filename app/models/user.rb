@@ -26,8 +26,9 @@
 class User < ApplicationRecord
   has_secure_password
   enum role: %i[employee reviewer]
+  before_validation :normalize_email
 
-  validates :email, presence: true, uniqueness: { case_sensitive: false }
+  validates :email, presence: true, uniqueness: true
   validates :password, length: { minimum: 8 }, on: :create
 
   has_many :expenses, dependent: :destroy
@@ -36,5 +37,11 @@ class User < ApplicationRecord
 
   def full_name
     "#{first_name} #{last_name}"
+  end
+
+  private
+
+  def normalize_email
+    self.email = email.to_s.strip.downcase
   end
 end

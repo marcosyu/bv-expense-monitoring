@@ -4,5 +4,16 @@
 #
 # Examples:
 #
-#   movies = Movie.create([{ name: "Star Wars" }, { name: "Lord of the Rings" }])
-#   Character.create(name: "Luke", movie: movies.first)
+users_data = [
+  { email: "marcos@exmon.com", first_name: "Marcos", last_name: "Yu", role: :reviewer, password: 'password' },
+  { email: "ken@exmon.com", first_name: "Ken Zion", last_name: "Yu", role: :employee, password: 'password' }
+]
+
+users_data.each do |user_attrs|
+  User.find_or_create_by(email: user_attrs[:email]) do |user|
+    user.first_name = user_attrs[:first_name]
+    user.last_name  = user_attrs[:last_name]
+    user.role       = user_attrs[:role]
+    user.password   = user_attrs[:password]
+  end
+end

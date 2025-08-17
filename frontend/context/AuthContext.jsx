@@ -4,7 +4,7 @@ import {
   BASE_API_URL,
   LOGIN_URL,
   API_TOKEN,
-  SIGN_UP_URL,
+  USERS_URL,
 } from "../constants/index";
 
 const AuthContext = createContext(null);
@@ -15,11 +15,13 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
   const [hydrated, setHydrated] = useState(false);
+  const [reviewer, setReviewer] = useState(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       const storedUser = localStorage.getItem("user");
       const storedToken = localStorage.getItem("token");
+      const storedReviewer = localStorage.getItem("reviewer");
       if (storedUser) {
         try {
           setUser(JSON.parse(storedUser));
@@ -28,6 +30,7 @@ export const AuthProvider = ({ children }) => {
         }
       }
       if (storedToken) setToken(storedToken);
+      if (storedReviewer) setReviewer(storedReviewer);
       setHydrated(true);
     }
   }, []);
@@ -45,7 +48,12 @@ export const AuthProvider = ({ children }) => {
     } else {
       localStorage.removeItem("user");
     }
-  }, [token, user, hydrated]);
+    if (reviewer) {
+      localStorage.setItem("reviewer", reviewer);
+    } else {
+      localStorage.removeItem("reviewer");
+    }
+  }, [token, user, reviewer, hydrated]);
 
   useEffect(() => {
     const reqInterceptor = api.interceptors.request.use(
@@ -67,6 +75,7 @@ export const AuthProvider = ({ children }) => {
     const res = await api.post(LOGIN_URL, { email, password });
     setToken(res.data.token);
     setUser(res.data.user_id);
+    setReviewer(res.data.reviewer);
   };
 
   const logout = () => {
@@ -75,7 +84,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signup = async (userParams, callback) => {
-    const res = await api.post(SIGN_UP_URL, userParams);
+    const res = await api.post(USERS_URL, userParams);
     if (callback) callback(res);
     return res;
   };
@@ -83,7 +92,9 @@ export const AuthProvider = ({ children }) => {
   if (!hydrated) return null;
 
   return (
-    <AuthContext.Provider value={{ token, user, login, logout, signup }}>
+    <AuthContext.Provider
+      value={{ token, user, login, logout, signup, reviewer }}
+    >
       {children}
     </AuthContext.Provider>
   );

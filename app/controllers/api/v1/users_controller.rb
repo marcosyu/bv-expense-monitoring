@@ -4,11 +4,16 @@ module Api
   module V1
     class UsersController < ApplicationController
       skip_before_action :authenticate_user, only: %i[login verify]
-      before_action :set_user, only: [:update]
+      before_action :set_user, only: [:update, :show]
 
       def index
         authorize @current_user
         render json: User.all
+      end
+
+      def show
+        authorize @current_user
+        render json: @user
       end
 
       def create
@@ -41,10 +46,12 @@ module Api
 
       def login
         user = User.verified.find_by(email: login_params[:email])
+
         if user&.authenticate(login_params[:password])
           render json: {
-            token:     JsonWebToken.encode(user_id: user.id),
-            full_name: user.full_name
+            token:    JsonWebToken.encode(user_id: user.id),
+            user_id:  user.id,
+            reviewer: user.reviewer?
           }
         else
           render json: { errors: I18n.t('user.errors.login') }, status: :unauthorized
@@ -67,7 +74,7 @@ module Api
       end
 
       def user_params
-        params.permit(:email, :first_name, :last_name, :password)
+        params.require(:user).permit(:email, :first_name, :last_name, :password, :role)
       end
 
       def login_params

@@ -10,7 +10,7 @@
 #  title      :string
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
-#  user_id    :bigint           not null
+#  user_id    :uuid             not null
 #
 # Indexes
 #
@@ -27,4 +27,15 @@ class Expense < ApplicationRecord
   }
 
   validates :title, :amount, :date, :category, :status, presence: true
+
+  scope :expenses_for, ->(user) do
+    if user.reviewer?
+      where(user_id: user.id)
+        .or(
+          where.not(user_id: user.id).where(status: [:submitted, :accepted, :approved, :rejected])
+        )
+    else
+      where(user_id: user.id)
+    end
+  end
 end
