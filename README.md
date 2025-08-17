@@ -1,4 +1,6 @@
-Architecture Decisions:
+## API Documentation 
+https://github.com/marcosyu/bv-expense-monitoring/wiki/API-Documentation
+## Architecture Decisions:
 1. Used https://github.com/akhil-gautam/nextjs-on-rails as a starting point as it mostly contain the functionality and technology requirements.
 2. Decided to use docker to run the app for several reasons:
  - To avoid any OS dependencies on the versions of the packages and gems.
@@ -10,7 +12,7 @@ Architecture Decisions:
 6. Submitted expenses cannot be updated or deleted
 7. Approval and Rejection of expenses are final
 
-How to Run:
+## How to Run:
 1. Ensure you have Docker and Docker Compose installed and running on your system.
 2. Open a terminal or command prompt.
 3. Navigate to the expense-monitoring directory
@@ -23,10 +25,10 @@ How to Run:
    docker compose down
    ```
 6. Once DB and server is running you can attach to the instance and run
-```
-rails db:migrate
-rails db:seed
-```
+   ```
+   rails db:migrate
+   rails db:seed
+   ```
 ## Dev Notes
 Working with docker:
 1. Updating rails credentials.
