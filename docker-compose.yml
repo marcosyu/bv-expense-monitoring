@@ -27,8 +27,8 @@ services:
     tty: true
     stdin_open: true
     volumes:
-      - .:/var/app:cached
-      - gem_cache:/usr/local/bundle/gems
+      - gem_cache:/usr/local/bundle
+      - .:/app
     networks:
       - development
     ports:
@@ -40,7 +40,6 @@ services:
       RAILS_MASTER_KEY: 17f49ffb9d022d0d8ad8b2b384c65b6d
     depends_on:
       - db
-      - frontend
   frontend:
     build:
       context: ./frontend
@@ -60,3 +59,6 @@ services:
       - WATCHPACK_POLLING=true
       - API_TOKEN=38055d4349f7f3f92d26103d31b7a19ccd7800fc3e16c5fbe8863583e91d40ad
     command: npm run dev -- -p 8000
+    depends_on:
+      - web
+      - db
